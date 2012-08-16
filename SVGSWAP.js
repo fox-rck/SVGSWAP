@@ -2,14 +2,14 @@
 * jQuery svgswap Plugin 
 * Examples and documentation not yet provided 
 * Copyright (c) 2012 R. Fox
-* Version:  1.0(9-AUG-2012)
+* Version:  1.1(9-AUG-2012)
 * Dual licensed under the MIT and GPL licenses.
 * http://jquery.malsup.com/license.html
-* Requires: jQuery v1.5.2 or later | Modernizr http://modernizr.com/
+* Requires: jQuery v1.7.2 or later
 */
 
 ; (function ($, undefined) {
-    var ver = '1.0';
+    var ver = '1.1';
 
     function log() {
         if (window.console && console.log && $.fn.svgswap.defaults.debug)
@@ -85,27 +85,33 @@
         svgimage.imgtag = img;
         svgimage.origsrc = $(img).attr("src");
         svgimage.svgsrc = svgurl;
+        svgimage.onerror = function(){loadError(svgimage)};
+        svgimage.onload = function(){switchtoSVG(svgimage)};
         $(img).data({ svgswap: svgimage });
         //Validate file existance or bypass with validation override
         if (($.fn.svgswap.defaults.validate && UrlExists(svgurl)) || $.fn.svgswap.defaults.validate == false) {
         //Validate SVG compatibility or bypass with isSVG override
-        if(($.fn.svgswap.defaults.isSVG && Modernizr.svg) || $.fn.svgswap.defaults.isSVG == false){
-            svgimage.onload = switchtoSVG(svgimage);
+        if(($.fn.svgswap.defaults.isSVG && Modernizr.svg) || ($.fn.svgswap.defaults.isSVG == false)){
+              svgimage.src=svgurl;
             }
         } else {
-            svgimage.onError = loadError(svgimage);
+            loadError(svgimage);
         }
+        
     }
     //Code Snipet from http://stackoverflow.com/questions/3915634/checking-if-a-url-is-broken-in-javascript*/
     function UrlExists(url) {
         var http = new XMLHttpRequest();
         http.open('HEAD', url, false);
         http.send();
+        if(http.status == 404)log("File Does Not Exist");
         return http.status != 404;
     }
     //Handle Load Error
     function loadError(svgimage) {
-        log("SVGSwap Image:" + svgimage.svgsrc + " could not be loaded");
+     svgimage.isLoaded = false;
+     log("SVGSwap Image could not be loaded");
+     // log("SVGSwap Image:" + svgimage.svgsrc + " could not be loaded");
     };
     //Define defalut values for variables
     $.fn.svgswap.defaults = {
